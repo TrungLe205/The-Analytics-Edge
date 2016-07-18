@@ -1,0 +1,46 @@
+setwd
+# Detecting Flu Epidemics Via Search Engine Query Data
+# Flu epidemics constitute a major public health concern causing respiratory illnesses, hospitalizations, and deaths. According to the National Vital Statistics Reports published in October 2012, influenza ranked as the eighth leading cause of death in 2011 in the United States. Each year, 250,000 to 500,000 deaths are attributed to influenza related diseases throughout the world.
+# The U.S. Centers for Disease Control and Prevention (CDC) and the European Influenza Surveillance Scheme (EISS) detect influenza activity through virologic and clinical data, including Influenza-like Illness (ILI) physician visits. Reporting national and regional data, however, are published with a 1-2 week lag.
+# The Google Flu Trends project was initiated to see if faster reporting can be made possible by considering flu-related online search queries -- data that is available almost immediately.
+# We would like to estimate influenza-like illness (ILI) activity using Google web search logs. Fortunately, one can easily access this data online:
+#ILI Data - The CDC publishes on its website the official regional and state-level percentage of patient visits to healthcare providers for ILI purposes on a weekly basis.#
+#
+#Google Search Queries - Google Trends allows public retrieval of weekly counts for every query searched by users around the world. For each location, the counts are normalized by dividing the count for each query in a particular week by the total number of online search queries submitted in that location during the week. Then, the values are adjusted to be between 0 and 1.#
+#
+#The csv file FluTrain.csv aggregates this data from January 1, 2004 until December 31, 2011 as follows:#
+#  "Week" - The range of dates represented by this observation, in year/month/day format.#
+#
+#"ILI" - This column lists the percentage of ILI-related physician visits for the corresponding week.#
+#
+#"Queries" - This column lists the fraction of queries that are ILI-related for the corresponding week, adjusted to be between 0 and 1 (higher values correspond to more ILI-related search queries).#
+#
+#Before applying analytics tools on the training set, we first need to understand the data at hand. Load "FluTrain.csv" into a data frame called FluTrain. Looking at the time period 2004-2011, which week corresponds to the highest percentage of ILI-related physician visits? Select the day of the month corresponding to the start of this week.
+fluTrain = read.csv("FluTrain.csv")
+summary(fluTrain)
+fluTrain$Week[which.max(fluTrain$ILI)]
+# Plot the histogram of dependent variable ILI
+hist(fluTrain$ILI)
+# Plot the natural logarithm of ILI vesus Queries
+plot(fluTrain$ILI, fluTrain$Queries)
+# Positive relationship between log(ILI) and Queries
+# Building linear regression model
+flu1 = lm(log(ILI)~Queries, data = fluTrain)
+summary(flu1)
+# Read fluTest file to make prediction
+fluTest = read.csv("fluTest.csv")
+# Making prediction
+predFlu = exp(predict(flu1, newdata = fluTest))
+# The Root Mean Square Error (RMSE) between our estimates and the actual observations for the percentage of ILI-related physician visits
+SSE = sum((predFlu - fluTest$ILI)^2)
+SSE
+RMSE = sqrt(SSE/nrow(fluTest))
+RMSE
+R2 = 1-(SSE/RMSE)
+R2
+SST = sum((mean(fluTrain$ILI - fluTest$ILI)^2))
+SST = sum(mean(fluTrain$ILI - fluTest$ILI)^2)
+SST = sum((mean(fluTrain$ILI) - fluTest$ILI)^2)
+SST
+R2 = 1-(SSE/SST)
+R2
